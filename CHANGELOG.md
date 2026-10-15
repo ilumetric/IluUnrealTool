@@ -9,6 +9,9 @@
 - Свои иконки кнопок Play Here и Place Actor (SVG из [Tabler Icons](https://github.com/tabler/tabler-icons), MIT —
   `Resources/Icons/LICENSE-tabler-icons.txt`) и Slate-стиль `IluUnrealToolStyle`.
 
+### Изменено
+- README: убран способ установки в проект (клон/junction в `Plugins/`) — плагин ставится только в движок, как в CLAUDE.md.
+
 ## [0.2.0] — 2026-10-15 — UE 5.8
 
 Первый выпуск под именем IluUnrealTool: универсальный плагин, не привязанный к проекту.
