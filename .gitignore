@@ -1,0 +1,25 @@
+# Unreal build output / Результаты сборки Unreal
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+
+# Packages made by Scripts/Package.ps1 / Пакеты Scripts/Package.ps1
+Build/
+*.zip
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.sln
+*.suo
+*.user
+*.VC.db
+*.opensdf
+*.sdf
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

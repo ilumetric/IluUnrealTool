@@ -1,0 +1,39 @@
+{
+	"FileVersion": 3,
+	"Version": 2,
+	"VersionName": "0.2.0",
+	"FriendlyName": "Ilu Unreal Tool",
+	"Description": "Editor toolkit for developers and AI agents: play-from-here, quick actor placement, Time Of Day wheel, static mesh operations and MCP toolsets (ToolsetRegistry). / Набор инструментов редактора для разработчика и ИИ-агентов: запуск PIE с точки, быстрая расстановка актора, колесо Time Of Day, операции над статик-мешами и MCP-тулсеты (ToolsetRegistry).",
+	"Category": "Ilumetric",
+	"CreatedBy": "ilumetric",
+	"CreatedByURL": "https://github.com/ilumetric",
+	"DocsURL": "https://github.com/ilumetric/IluUnrealTool",
+	"SupportURL": "https://github.com/ilumetric/IluUnrealTool/issues",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"Installed": false,
+	"EnabledByDefault": true,
+	"Modules": [
+		{
+			"Name": "IluUnrealToolCore",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "IluUnrealToolAgent",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "IluUnrealToolDeveloper",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ToolsetRegistry",
+			"Enabled": true
+		}
+	]
+}

@@ -1,0 +1,13 @@
+# Text files are stored with LF in the repository / Текстовые файлы хранятся в репозитории с LF.
+* text=auto
+
+# Shell scripts must keep LF to run in Git Bash / Shell-скрипты должны оставаться с LF, иначе не запустятся в Git Bash.
+*.sh text eol=lf
+
+# PowerShell and batch files keep CRLF / PowerShell и batch — с CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+*.png binary
+*.uasset binary
+*.umap binary
