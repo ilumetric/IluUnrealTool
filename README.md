@@ -60,12 +60,7 @@ IluUnrealTool/
 ```
 
 Скрипт собирает плагин (`RunUAT BuildPlugin`) и кладёт его в `<Engine>\Engine\Plugins\Marketplace\IluUnrealTool`.
-Плагин включён по умолчанию (`EnabledByDefault`), поэтому появляется во всех проектах. Выключить в отдельном
-проекте — в `.uproject`:
-
-```json
-{ "Name": "IluUnrealTool", "Enabled": false }
-```
+Плагин включён по умолчанию (`EnabledByDefault`), поэтому появляется во всех проектах.
 
 ### Не в проект
 
