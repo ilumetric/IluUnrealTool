@@ -3,6 +3,7 @@
 #include "IluPlaceActorTool.h"
 #include "IluPlayHereTool.h"
 #include "IluTimeOfDayTool.h"
+#include "IluUnrealToolStyle.h"
 
 #include "Editor.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
@@ -20,6 +21,7 @@
 
 void FIluUnrealToolDeveloperModule::StartupModule()
 {
+	FIluUnrealToolStyle::Initialize();
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FIluUnrealToolDeveloperModule::RegisterMenus));
 }
 
@@ -37,6 +39,7 @@ void FIluUnrealToolDeveloperModule::ShutdownModule()
 	}
 	UToolMenus::UnRegisterStartupCallback(this);
 	UToolMenus::UnregisterOwner(this);
+	FIluUnrealToolStyle::Shutdown();
 }
 
 void FIluUnrealToolDeveloperModule::RegisterMenus()
@@ -63,7 +66,7 @@ void FIluUnrealToolDeveloperModule::RegisterMenus()
 		LOCTEXT("PlayHereTooltip",
 			"Place the GameMode default pawn under the cursor and start PIE at that spot. LMB — play, mouse wheel — rotate (Shift = fine), Ctrl+wheel — lift, Space — toggle align-to-normal, Esc/RMB — cancel.\n"
 			"Поставить дефолтного павна из GameMode под курсором и запустить PIE с этого места. ЛКМ — старт, колесо — поворот (с Shift точнее), Ctrl+колесо — высота, пробел — тогл выравнивания по нормали, Esc/ПКМ — отмена."),
-		FSlateIcon(FAppStyle::GetAppStyleSetName(), "PlayWorld.PlayInViewport"),
+		FSlateIcon(FIluUnrealToolStyle::GetStyleSetName(), "IluUnrealTool.PlayHere"),
 		EUserInterfaceActionType::Button
 	);
 	Entry.StyleNameOverride = FName("Toolbar.BackplateLeft");
@@ -80,7 +83,7 @@ void FIluUnrealToolDeveloperModule::RegisterMenus()
 		LOCTEXT("PlaceActorTooltip",
 			"Place an actor of the class picked in the \"...\" panel under the cursor. LMB — place and exit, wheel — rotate, Ctrl+wheel — lift, Z — cycle the variant variable, Space — align-to-normal, Esc/RMB — cancel.\n"
 			"Поставить актор класса из подпанели «…» под курсором. ЛКМ — поставить и выйти, колесо — поворот, Ctrl+колесо — высота, Z — листать переменную варианта, пробел — нормаль, Esc/ПКМ — отмена."),
-		FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.OpenPlaceActors"),
+		FSlateIcon(FIluUnrealToolStyle::GetStyleSetName(), "IluUnrealTool.PlaceActor"),
 		EUserInterfaceActionType::Button
 	);
 	PlaceActorEntry.StyleNameOverride = FName("Toolbar.BackplateCenter");

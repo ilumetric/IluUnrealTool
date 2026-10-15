@@ -78,7 +78,9 @@ Play Here и Place Actor — изолированные режимы на общ
 ## Как добавить инструмент
 
 - **Кнопку на тулбар** — `IluUnrealToolDeveloperModule.cpp` → `RegisterMenus()`: секция `IluUnrealTool` в меню
-  `LevelEditor.LevelEditorToolBar.PlayToolBar`, ещё один `FToolMenuEntry::InitToolBarButton`.
+  `LevelEditor.LevelEditorToolBar.PlayToolBar`, ещё один `FToolMenuEntry::InitToolBarButton`. Иконка — SVG в
+  `Resources/Icons` (белый цвет, без `currentColor`, текста и CSS) + строка в `IluUnrealToolStyle.cpp`, в кнопке —
+  `FSlateIcon(FIluUnrealToolStyle::GetStyleSetName(), "IluUnrealTool.<Имя>")`.
 - **Интерактивный режим «превью под курсором»** — наследник `FIluPlacementToolBase`: класс превью, подготовка превью,
   `Confirm()` и свои настройки; трейс, поворот, высота, нормаль и инпут уже в базе.
 - **Операцию над мешем** — в `FIluMeshOperations` (Core), затем пункт в `IluMeshOpsMenu.cpp` и, если нужна агентам,

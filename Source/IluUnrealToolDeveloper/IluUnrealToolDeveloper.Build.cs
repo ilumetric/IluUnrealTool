@@ -23,6 +23,7 @@ public class IluUnrealToolDeveloper : ModuleRules
 			"ToolMenus",
 			"EngineSettings",
 			"PropertyEditor",
+			"Projects",
 			"IluUnrealToolCore",
 		});
 	}

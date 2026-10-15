@@ -39,6 +39,7 @@ IluUnrealTool/
 │  └─ IluUnrealToolDeveloper/  раздел разработчика: тулбар, Play Here, Place Actor, Time Of Day, меню Mesh Ops
 ├─ Agent/                      для агентов и MCP-клиентов: справка, CLI-скрипты, примеры
 ├─ Docs/                       документация разработчика и схема версий
+├─ Resources/Icons/            SVG-иконки кнопок (Tabler Icons, MIT — см. LICENSE-tabler-icons.txt)
 ├─ Scripts/                    сборка пакета (Package.ps1) и установка в движок (Install.ps1)
 └─ Config/FilterPlugin.ini     что ещё попадает в собранный пакет
 ```
