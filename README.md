@@ -28,6 +28,8 @@ Editor toolkit for Unreal Engine with two sections: tools for the developer and 
 - Agent skill `IluUnrealToolAgentSkill` — инструкция для агента, находится через `AgentSkillToolset.ListSkills`.
 - `Agent/Scripts` — CLI-обёртки для вызова MCP из терминала (`mcp.sh`, `run.sh`), `Agent/Examples` — пример скрипта.
 
+ИИ-агенту, которого попросили изменить сам плагин, — порядок работы в [CLAUDE.md](CLAUDE.md).
+
 ## Структура
 
 ```
