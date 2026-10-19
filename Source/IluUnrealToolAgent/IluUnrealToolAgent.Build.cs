@@ -16,6 +16,8 @@ public class IluUnrealToolAgent : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"UnrealEd",
+			"AssetTools",
+			"BlueprintGraph",
 			"EditorSubsystem",
 			"ToolsetRegistry",
 			"IluUnrealToolCore",

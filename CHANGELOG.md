@@ -6,6 +6,9 @@
 ## [Unreleased]
 
 ### Добавлено
+- MCP-тулсет `IluUnrealToolAgent.IluBlueprintToolset`: `CreateEnum`, `SetEnumEntries`, `GetEnumEntries` —
+  Blueprint-энумы; `SetVariableType` — смена типа переменной Blueprint (в том числе на энум, структуру, класс)
+  без модального диалога подтверждения.
 - Свои иконки кнопок Play Here и Place Actor (SVG из [Tabler Icons](https://github.com/tabler/tabler-icons), MIT —
   `Resources/Icons/LICENSE-tabler-icons.txt`) и Slate-стиль `IluUnrealToolStyle`.
 

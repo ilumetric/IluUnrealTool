@@ -25,6 +25,7 @@ Editor toolkit for Unreal Engine with two sections: tools for the developer and 
 
 - `IluUnrealToolAgent.IluMeshToolset` — те же операции над статик-мешами плюс диагностика вертекс-колора.
 - `IluUnrealToolAgent.IluMaterialToolset` — Named Reroute, размер Comment, ключи Linear Color Curve.
+- `IluUnrealToolAgent.IluBlueprintToolset` — Blueprint-энумы (создать, задать и прочитать элементы) и смена типа переменной Blueprint.
 - Agent skill `IluUnrealToolAgentSkill` — инструкция для агента, находится через `AgentSkillToolset.ListSkills`.
 - `Agent/Scripts` — CLI-обёртки для вызова MCP из терминала (`mcp.sh`, `run.sh`), `Agent/Examples` — пример скрипта.
 

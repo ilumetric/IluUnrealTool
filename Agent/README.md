@@ -32,6 +32,18 @@ MCP-сервер редактора (плагин `ModelContextProtocol`, по �
 | `SetCommentBounds` | `Comment`, `X`, `Y`, `SizeX`, `SizeY` | позиция и размер рамки Comment |
 | `SetLinearColorCurveKeys` | `Curve`, `Colors`, `bStepped` | ключи Linear Color Curve равномерно по 0..1; цвета **линейные**; `bStepped=true` — ровные полосы (палитры для атласов), `false` — плавный градиент |
 
+## IluUnrealToolAgent.IluBlueprintToolset
+
+Blueprint-энумы и тип переменной — штатный `BlueprintTools.add_variable` знает только примитивы и пять структур,
+а элементы `UserDefinedEnum` меняет только C++ (`FEnumEditorUtils`, в Python не открыт).
+
+| Инструмент | Аргументы | Что делает |
+|---|---|---|
+| `CreateEnum` | `AssetPath`, `Entries` | новый Blueprint-энум (`/Game/.../E_Name`) с элементами по порядку; `Entries` — отображаемые имена, внутренние (`NewEnumerator0…`) движок задаёт сам; потом сохранить |
+| `SetEnumEntries` | `Enum`, `Entries` | переименовать элементы по индексу, недостающие добавить в конец, лишние удалить с конца; переименование сохраняет записанные значения, удаление сбрасывает |
+| `GetEnumEntries` | `Enum` | только чтение: индекс, отображаемое и внутреннее имя элементов любого энума |
+| `SetVariableType` | `Blueprint`, `VariableName`, `Type` | сменить тип переменной, как в Variable Type, без диалога подтверждения: `bool`, `byte`, `int`, `int64`, `float`, `name`, `string`, `text` или путь к энуму, структуре, классу; массив/set сохраняются, map не поддерживается; значения на экземплярах сбрасываются; потом скомпилировать и сохранить BP |
+
 ## Agent skill
 
 `UIluUnrealToolAgentSkill` — краткая инструкция по тулсетам для агента. ToolsetRegistry находит её сам:
