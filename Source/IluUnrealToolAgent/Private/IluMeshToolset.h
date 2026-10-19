@@ -5,6 +5,7 @@
 
 #include "IluMeshToolset.generated.h"
 
+class AActor;
 class UStaticMesh;
 
 /**
@@ -95,4 +96,32 @@ public:
 	 */
 	UFUNCTION(meta = (AICallable), Category = "IluMeshToolset")
 	static FString RemoveLods(UStaticMesh* Mesh);
+
+	/**
+	 * Bakes the visible mesh components of the actors (Dynamic Mesh — e.g. Geometry Script blockouts — and Static Mesh) into ONE
+	 * new static mesh asset; one material slot per unique material, collision = complex as simple. An existing asset is not
+	 * overwritten. Save the asset afterwards.
+	 * Запекает видимые меш-компоненты акторов (Dynamic Mesh — например, блокауты на Geometry Script — и Static Mesh) в ОДИН
+	 * новый ассет статик-меша; слот на уникальный материал, коллизия — complex as simple. Существующий ассет не перезаписывается.
+	 * После — сохранить ассет.
+	 * @param Actors Level actors to merge (e.g. from GetSelectedActors).
+	 * @param AssetPath New asset path, e.g. "/Game/Blockout/SM_Blockout_02".
+	 * @param bPivotAtBottomCenter True: pivot at the bottom center of the merged bounds; false: pivot at the world origin.
+	 * @return "OK: ..." or an error description.
+	 */
+	UFUNCTION(meta = (AICallable), Category = "IluMeshToolset")
+	static FString BakeActorsToStaticMesh(const TArray<AActor*>& Actors, const FString& AssetPath, bool bPivotAtBottomCenter);
+
+	/**
+	 * Merges the visible mesh components of the actors (Dynamic Mesh and Static Mesh) into one mesh and writes it straight to
+	 * a file on disk: .fbx or .obj by the extension, an existing file is overwritten. Nothing is added to Content.
+	 * Сливает видимые меш-компоненты акторов (Dynamic Mesh и Static Mesh) в один меш и пишет его сразу в файл на диске:
+	 * .fbx или .obj по расширению, существующий файл перезаписывается. В Content ничего не появляется.
+	 * @param Actors Level actors to merge (e.g. from GetSelectedActors).
+	 * @param FilePath Absolute file path ending with .fbx or .obj, e.g. "D:/Export/Blockout.fbx".
+	 * @param bPivotAtBottomCenter True: pivot at the bottom center of the merged bounds; false: pivot at the world origin.
+	 * @return "OK: ..." or an error description.
+	 */
+	UFUNCTION(meta = (AICallable), Category = "IluMeshToolset")
+	static FString ExportActorsToFile(const TArray<AActor*>& Actors, const FString& FilePath, bool bPivotAtBottomCenter);
 };

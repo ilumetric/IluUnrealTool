@@ -24,6 +24,7 @@ public class IluUnrealToolDeveloper : ModuleRules
 			"EngineSettings",
 			"PropertyEditor",
 			"Projects",
+			"DesktopPlatform",
 			"IluUnrealToolCore",
 		});
 	}

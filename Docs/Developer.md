@@ -72,6 +72,8 @@ Play Here и Place Actor — изолированные режимы на общ
 | Remove LODs (keep LOD0) | удалить все LOD, кроме LOD0, включая импортные (для Nanite) |
 | Collision: Project Default | Collision Complexity = Project Default, предупреждение, если нет простой коллизии |
 | Bake AO to vertex alpha | AO от самого меша в альфу вертекс-колора, RGB не трогается; параметры *AO rays*, *AO distance* |
+| Export selected to FBX/OBJ... | видимые меши выделенных акторов (блокауты Dynamic Mesh и Static Mesh) — в один меш, окно «Сохранить как», файл `.fbx` или `.obj`; ассеты не меняются, в Content ничего не создаётся. Последняя папка запоминается |
+| Export: pivot at bottom center | галка для экспорта: пивот в центре низа выделения (вкл., по умолчанию) или в начале координат мира (сохраняет положение на уровне) |
 
 Те же операции доступны агентам через `IluUnrealToolAgent.IluMeshToolset` — см. [Agent/README.md](../Agent/README.md).
 

@@ -6,6 +6,10 @@
 ## [Unreleased]
 
 ### Добавлено
+- Запекание мешей акторов (`FIluMeshBake` в Core): видимые компоненты Dynamic Mesh (блокауты на Geometry Script)
+  и Static Mesh сливаются в один меш со слотом на уникальный материал. MCP: `IluMeshToolset.BakeActorsToStaticMesh`
+  (новый ассет статик-меша) и `IluMeshToolset.ExportActorsToFile` (сразу в .fbx/.obj). Меню «⋮» → Mesh Ops:
+  **Export selected to FBX/OBJ...** с окном «Сохранить как» и галка пивота **Export: pivot at bottom center**.
 - MCP-тулсет `IluUnrealToolAgent.IluBlueprintToolset`: `CreateEnum`, `SetEnumEntries`, `GetEnumEntries` —
   Blueprint-энумы; `SetVariableType` — смена типа переменной Blueprint (в том числе на энум, структуру, класс)
   без модального диалога подтверждения.

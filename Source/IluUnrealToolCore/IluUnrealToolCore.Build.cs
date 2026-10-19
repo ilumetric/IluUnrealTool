@@ -1,8 +1,8 @@
 using UnrealBuildTool;
 
 /**
- * Shared layer for the Agent and Developer modules: log category, notifications, static mesh operations.
- * Общий слой для модулей Agent и Developer: лог-категория, уведомления, операции над статик-мешами.
+ * Shared layer for the Agent and Developer modules: log category, notifications, static mesh operations, actor mesh bake.
+ * Общий слой для модулей Agent и Developer: лог-категория, уведомления, операции над статик-мешами, запекание мешей акторов.
  */
 public class IluUnrealToolCore : ModuleRules
 {
@@ -25,6 +25,9 @@ public class IluUnrealToolCore : ModuleRules
 			"MeshDescription",
 			"StaticMeshDescription",
 			"GeometryCore",
+			"GeometryFramework",
+			"MeshConversion",
+			"AssetRegistry",
 		});
 	}
 }

@@ -1,9 +1,11 @@
 #include "IluMeshOpsMenu.h"
 #include "IluEditorNotify.h"
+#include "IluMeshBake.h"
 #include "IluMeshOperations.h"
 #include "IluUnrealToolCore.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "DesktopPlatformModule.h"
 #include "Editor.h"
 #include "Engine/Selection.h"
 #include "Engine/StaticMesh.h"
@@ -12,6 +14,7 @@
 #include "GameFramework/Actor.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/MessageDialog.h"
+#include "Misc/Paths.h"
 #include "Misc/ScopedSlowTask.h"
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Layout/SBox.h"
@@ -23,6 +26,8 @@ namespace IluMeshOpsMenu
 	static const TCHAR* SettingsSection = TEXT("IluUnrealTool.MeshOps");
 	static int32 GAORays = 64;
 	static float GAODistance = 50.f;
+	static bool GExportPivotBottom = true;
+	static FString GExportDir;
 	static bool GSettingsLoaded = false;
 
 	static void LoadSettings()
@@ -34,6 +39,8 @@ namespace IluMeshOpsMenu
 		GSettingsLoaded = true;
 		GConfig->GetInt(SettingsSection, TEXT("AORays"), GAORays, GEditorPerProjectIni);
 		GConfig->GetFloat(SettingsSection, TEXT("AODistance"), GAODistance, GEditorPerProjectIni);
+		GConfig->GetBool(SettingsSection, TEXT("ExportPivotBottom"), GExportPivotBottom, GEditorPerProjectIni);
+		GConfig->GetString(SettingsSection, TEXT("ExportDir"), GExportDir, GEditorPerProjectIni);
 		GAORays = FMath::Clamp(GAORays, FIluMeshOpsMenu::AORaysMin, FIluMeshOpsMenu::AORaysMax);
 		GAODistance = FMath::Clamp(GAODistance, 1.f, FIluMeshOpsMenu::AODistanceMax);
 	}
@@ -103,6 +110,74 @@ namespace IluMeshOpsMenu
 
 		FIluEditorNotify::Show(FText::Format(LOCTEXT("Done", "{0}: готово, мешей {1}, ошибок {2}. Не забудь сохранить ассеты."),
 			OpName, FText::AsNumber(Meshes.Num()), FText::AsNumber(Failed)), Failed == 0, 5.f);
+	}
+
+	/** Выделенные акторы -> окно «Сохранить как» -> один общий меш в .fbx/.obj. В Content ничего не создаётся. */
+	static void ExportSelected()
+	{
+		FSlateApplication::Get().DismissAllMenus();
+		LoadSettings();
+
+		TArray<AActor*> Actors;
+		if (GEditor)
+		{
+			for (FSelectionIterator It(GEditor->GetSelectedActorIterator()); It; ++It)
+			{
+				if (AActor* Actor = Cast<AActor>(*It))
+				{
+					Actors.Add(Actor);
+				}
+			}
+		}
+		if (Actors.Num() == 0)
+		{
+			FIluEditorNotify::Show(LOCTEXT("ExportNoActors", "Экспорт мешей: ничего не выделено"), false);
+			return;
+		}
+
+		IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+		if (!DesktopPlatform)
+		{
+			return;
+		}
+		const FString DefaultDir = GExportDir.IsEmpty() ? FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()) : GExportDir;
+		TArray<FString> Files;
+		const bool bPicked = DesktopPlatform->SaveFileDialog(
+			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr),
+			TEXT("Export selected meshes / Экспорт выделенных мешей"),
+			DefaultDir,
+			Actors[0]->GetActorLabel() + TEXT(".fbx"),
+			TEXT("FBX (*.fbx)|*.fbx|OBJ (*.obj)|*.obj"),
+			EFileDialogFlags::None,
+			Files);
+		if (!bPicked || Files.Num() == 0)
+		{
+			return;
+		}
+		const FString FilePath = FPaths::ConvertRelativePathToFull(Files[0]);
+
+		GExportDir = FPaths::GetPath(FilePath);
+		if (GConfig)
+		{
+			GConfig->SetString(SettingsSection, TEXT("ExportDir"), *GExportDir, GEditorPerProjectIni);
+		}
+
+		FString Result;
+		{
+			FScopedSlowTask Task(1.f, LOCTEXT("ExportProgress", "Экспорт мешей..."));
+			Task.MakeDialog();
+			Task.EnterProgressFrame(1.f);
+			Result = FIluMeshBake::ExportActorsToFile(Actors, FilePath, GExportPivotBottom);
+		}
+
+		const bool bOk = FIluMeshOperations::IsSuccess(Result);
+		if (!bOk)
+		{
+			UE_LOG(LogIluUnrealTool, Warning, TEXT("Экспорт мешей: %s"), *Result);
+		}
+		FIluEditorNotify::Show(bOk
+			? FText::Format(LOCTEXT("ExportDone", "Экспорт мешей: {0}"), FText::FromString(FilePath))
+			: FText::FromString(Result), bOk, 5.f);
 	}
 }
 
@@ -249,6 +324,35 @@ void FIluMeshOpsMenu::AddSection(FMenuBuilder& MenuBuilder)
 			.OnValueChanged_Static(&FIluMeshOpsMenu::SetAODistance)
 		],
 		LOCTEXT("AODistanceLabel", "AO distance (cm)"));
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("ExportLabel", "Export selected to FBX/OBJ..."),
+		LOCTEXT("ExportTooltip",
+			"Merge the visible meshes of the selected actors (Dynamic Mesh blockouts and Static Mesh) into one mesh and save it to disk as .fbx or .obj.\n"
+			"Слить видимые меши выделенных акторов (блокауты Dynamic Mesh и Static Mesh) в один меш и сохранить на диск в .fbx или .obj."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateStatic(&IluMeshOpsMenu::ExportSelected)));
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("ExportPivotLabel", "Export: pivot at bottom center"),
+		LOCTEXT("ExportPivotTooltip",
+			"On: the exported mesh pivot is at the bottom center of the selection. Off: at the world origin (keeps level placement).\n"
+			"Вкл.: пивот экспортируемого меша — в центре низа выделения. Выкл.: в начале координат мира (сохраняет положение на уровне)."),
+		FSlateIcon(),
+		FUIAction(
+			FExecuteAction::CreateLambda([]()
+			{
+				IluMeshOpsMenu::LoadSettings();
+				IluMeshOpsMenu::GExportPivotBottom = !IluMeshOpsMenu::GExportPivotBottom;
+				if (GConfig)
+				{
+					GConfig->SetBool(IluMeshOpsMenu::SettingsSection, TEXT("ExportPivotBottom"), IluMeshOpsMenu::GExportPivotBottom, GEditorPerProjectIni);
+				}
+			}),
+			FCanExecuteAction(),
+			FIsActionChecked::CreateLambda([]() { IluMeshOpsMenu::LoadSettings(); return IluMeshOpsMenu::GExportPivotBottom; })),
+		NAME_None,
+		EUserInterfaceActionType::ToggleButton);
 
 	MenuBuilder.EndSection();
 }

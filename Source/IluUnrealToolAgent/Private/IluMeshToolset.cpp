@@ -1,4 +1,5 @@
 #include "IluMeshToolset.h"
+#include "IluMeshBake.h"
 #include "IluMeshOperations.h"
 
 // Тулсет — тонкая обёртка: сами операции живут в Core (FIluMeshOperations) и общие с меню разработчика.
@@ -36,4 +37,14 @@ FString UIluMeshToolset::SetCollisionProjectDefault(UStaticMesh* Mesh)
 FString UIluMeshToolset::RemoveLods(UStaticMesh* Mesh)
 {
 	return FIluMeshOperations::RemoveLods(Mesh);
+}
+
+FString UIluMeshToolset::BakeActorsToStaticMesh(const TArray<AActor*>& Actors, const FString& AssetPath, bool bPivotAtBottomCenter)
+{
+	return FIluMeshBake::BakeActorsToStaticMesh(Actors, AssetPath, bPivotAtBottomCenter);
+}
+
+FString UIluMeshToolset::ExportActorsToFile(const TArray<AActor*>& Actors, const FString& FilePath, bool bPivotAtBottomCenter)
+{
+	return FIluMeshBake::ExportActorsToFile(Actors, FilePath, bPivotAtBottomCenter);
 }

@@ -22,6 +22,15 @@ MCP-сервер редактора (плагин `ModelContextProtocol`, по �
 | `RemoveLods` | `Mesh` | оставить только LOD0, включая импортные LOD |
 | `SetCollisionProjectDefault` | `Mesh` | Collision Complexity = Project Default, в отчёте число простых форм |
 
+Запекание акторов (не меняют существующие ассеты): видимые меш-компоненты акторов — Dynamic Mesh (блокауты на
+Geometry Script) и Static Mesh — сливаются в один меш, слот на уникальный материал. `bPivotAtBottomCenter` — пивот
+в центре низа общих габаритов (иначе в начале координат мира). Акторы — например, из `EditorAppToolset.GetSelectedActors`.
+
+| Инструмент | Аргументы | Что делает |
+|---|---|---|
+| `BakeActorsToStaticMesh` | `Actors`, `AssetPath`, `bPivotAtBottomCenter` | новый ассет статик-меша (`/Game/.../SM_Имя`, существующий не перезаписывается), коллизия complex as simple; потом сохранить |
+| `ExportActorsToFile` | `Actors`, `FilePath`, `bPivotAtBottomCenter` | сразу в файл на диске, `.fbx` или `.obj` по расширению (абсолютный путь, перезаписывается); в Content ничего не создаётся |
+
 ## IluUnrealToolAgent.IluMaterialToolset
 
 Помощники для графа материала поверх штатного `MaterialTools`.

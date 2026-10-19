@@ -18,12 +18,14 @@ Editor toolkit for Unreal Engine with two sections: tools for the developer and 
 - **Play Here** — превью дефолтного павна из GameMode ходит под курсором, ЛКМ запускает PIE с этой точки и с этим курсом.
 - **Place Actor** — расставляет актор выбранного класса под курсором (с undo), клавиша Z листает его вариант (int/byte/enum-переменная).
 - **«⋮»** — настройки инструментов и **Mesh Ops**: пакетные операции над статик-мешами выделенных акторов
-  (слить слоты материалов, обнулить вертекс-колор, запечь AO в альфу, оставить UV0, удалить LOD, коллизия Project Default).
+  (слить слоты материалов, обнулить вертекс-колор, запечь AO в альфу, оставить UV0, удалить LOD, коллизия Project Default)
+  и экспорт выделенных акторов (в том числе динамических мешей-блокаутов) одним мешем в FBX/OBJ.
 - **Time Of Day** — бесконечное колесо времени суток на тулбаре вьюпорта (Ultra Dynamic Sky и любой BP с переменной `Time of Day`).
 
 **Раздел для ИИ-агентов** — MCP-тулсеты через `ToolsetRegistry` ([подробно](Agent/README.md)):
 
-- `IluUnrealToolAgent.IluMeshToolset` — те же операции над статик-мешами плюс диагностика вертекс-колора.
+- `IluUnrealToolAgent.IluMeshToolset` — те же операции над статик-мешами плюс диагностика вертекс-колора,
+  запекание мешей акторов (в том числе динамических) в один статик-меш и экспорт в FBX/OBJ.
 - `IluUnrealToolAgent.IluMaterialToolset` — Named Reroute, размер Comment, ключи Linear Color Curve.
 - `IluUnrealToolAgent.IluBlueprintToolset` — Blueprint-энумы (создать, задать и прочитать элементы) и смена типа переменной Blueprint.
 - Agent skill `IluUnrealToolAgentSkill` — инструкция для агента, находится через `AgentSkillToolset.ListSkills`.
