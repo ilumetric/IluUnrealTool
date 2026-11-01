@@ -28,6 +28,7 @@ Editor toolkit for Unreal Engine with two sections: tools for the developer and 
   запекание мешей акторов (в том числе динамических) в один статик-меш и экспорт в FBX/OBJ.
 - `IluUnrealToolAgent.IluMaterialToolset` — Named Reroute, размер Comment, ключи Linear Color Curve.
 - `IluUnrealToolAgent.IluBlueprintToolset` — Blueprint-энумы (создать, задать и прочитать элементы) и смена типа переменной Blueprint.
+- `IluUnrealToolAgent.IluPCGToolset` — чтение и запись HLSL-кода нод Custom HLSL и ассетов PCG Compute Source.
 - Agent skill `IluUnrealToolAgentSkill` — инструкция для агента, находится через `AgentSkillToolset.ListSkills`.
 - `Agent/Scripts` — CLI-обёртки для вызова MCP из терминала (`mcp.sh`, `run.sh`), `Agent/Examples` — пример скрипта.
 

@@ -53,6 +53,21 @@ Blueprint-энумы и тип переменной — штатный `Blueprin
 | `GetEnumEntries` | `Enum` | только чтение: индекс, отображаемое и внутреннее имя элементов любого энума |
 | `SetVariableType` | `Blueprint`, `VariableName`, `Type` | сменить тип переменной, как в Variable Type, без диалога подтверждения: `bool`, `byte`, `int`, `int64`, `float`, `name`, `string`, `text` или путь к энуму, структуре, классу; массив/set сохраняются, map не поддерживается; значения на экземплярах сбрасываются; потом скомпилировать и сохранить BP |
 
+## IluUnrealToolAgent.IluPCGToolset
+
+HLSL-код нод **Custom HLSL** и ассетов **PCG Compute Source** — штатный `PCGToolset` и `ObjectTools` его не видят
+(поля кода в движке без флага Edit). Работает через рефлексию: плагин PCG тулсету не нужен. `Target` — нода графа
+(путь из `PCGToolset.GetGraphStructure`, например `/Game/Folder/Graph.Graph:CustomHLSL_0`), объект её настроек
+или ассет Compute Source.
+
+| Инструмент | Аргументы | Что делает |
+|---|---|---|
+| `GetHLSLSource` | `Target`, `bIncludeDeclarations` | только чтение: тело ядра, свои функции, Kernel Source Override и Additional Sources; с `bIncludeDeclarations` — сгенерированные объявления (функции доступа к пинам: `Landscape_GetHeight`, `Out_SetPosition`, … и хелперы) |
+| `SetHLSLSource` | `Target`, `Source` | заменить тело ядра ноды или код Compute Source — как HLSL Source Editor: с отменой, граф перекомпилируется; ошибки шейдера — при запуске графа (`PCGToolset.ExecuteGraphInstance`); потом сохранить |
+| `SetHLSLFunctions` | `Target`, `Functions` | заменить блок своих функций ноды Custom HLSL; потом сохранить |
+
+Нода с **Kernel Source Override** исполняет код ассета — запись в саму ноду отклоняется с подсказкой править ассет.
+
 ## Agent skill
 
 `UIluUnrealToolAgentSkill` — краткая инструкция по тулсетам для агента. ToolsetRegistry находит её сам:

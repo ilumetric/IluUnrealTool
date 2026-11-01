@@ -20,8 +20,8 @@ public:
 	UIluUnrealToolAgentSkill()
 	{
 		Description = TEXT("IluUnrealTool: batch static mesh fixes (material slots, vertex color, AO bake, UVs, LODs, collision), "
-			"material graph helpers (named reroutes, comment boxes, color curve keys) and Blueprint helpers (Blueprint enums, "
-			"variable type change) that the stock toolsets lack.");
+			"material graph helpers (named reroutes, comment boxes, color curve keys), Blueprint helpers (Blueprint enums, "
+			"variable type change) and PCG Custom HLSL code read/write that the stock toolsets lack.");
 		Instructions = TEXT(
 			"Toolsets (call through the MCP call_tool with toolset_name and tool_name):\n"
 			"- IluUnrealToolAgent.IluMeshToolset — static mesh asset operations. Every tool edits the ASSET (all its instances on all "
@@ -50,6 +50,14 @@ public:
 			"class path. To add an enum variable: BlueprintTools.add_variable as byte, then SetVariableType. Nodes using the variable are "
 			"reconstructed (check the graph with read_graph_dsl), values on placed instances are reset — restore them; then "
 			"compile_blueprint and save.\n"
+			"- IluUnrealToolAgent.IluPCGToolset — HLSL code of PCG Custom HLSL nodes and PCG Compute Source assets (PCGToolset and "
+			"ObjectTools cannot read it). Target is the node path from PCGToolset.GetGraphStructure (e.g. /Game/F/G.G:CustomHLSL_0), "
+			"its settings object or a Compute Source asset.\n"
+			"  * GetHLSLSource(Target, bIncludeDeclarations) — read-only; call it with bIncludeDeclarations=true before writing code: "
+			"the declarations list the exact accessor functions of every pin (e.g. Landscape_GetHeight, Out_SetPosition) and helpers.\n"
+			"  * SetHLSLSource(Target, Source) / SetHLSLFunctions(Target, Functions) — replace the kernel body / the functions block, "
+			"undoable, the graph recompiles. Pins and kernel type are set with PCGToolset.UpdateNode, not here. Then run the graph with "
+			"PCGToolset.ExecuteGraphInstance to catch shader errors and save the graph (AssetTools.save_assets).\n"
 			"Object references are passed as {\"refPath\": \"/Game/Path/Asset.Asset\"}. For multi-step jobs prefer one "
 			"ProgrammaticToolset.execute_tool_script call that loops over assets instead of many single calls.");
 	}
