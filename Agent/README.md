@@ -68,6 +68,15 @@ HLSL-код нод **Custom HLSL** и ассетов **PCG Compute Source** — 
 
 Нода с **Kernel Source Override** исполняет код ассета — запись в саму ноду отклоняется с подсказкой править ассет.
 
+Ноды из **любых модулей**: штатные `PCGToolset.ListNativeNodes` / `AddNode` знают только ноды пакета `/Script/PCG`,
+ноды плагинов (Mesh Partition / Mesh Terrain, Geometry Script и др.) через них не поставить. Граф правится его же
+функциями `AddNodeOfType` и `ForceNotificationForEditor` через `ProcessEvent` — тоже без зависимости от плагина PCG.
+
+| Инструмент | Аргументы | Что делает |
+|---|---|---|
+| `ListNodeTypes` | `Filter` | только чтение: типы нод всех загруженных модулей — отображаемое имя класса, путь класса, `[stock]` у нод `/Script/PCG`; `Filter` — подстрока имени или пути без учёта регистра |
+| `AddNodeByClass` | `Graph`, `NodeType`, `NodeName`, `NodeTitle`, `XPosition`, `YPosition` | добавить ноду по пути класса (например `/Script/PCGMeshPartitionInterop.PCGQuerySettings`), имени или отображаемому имени класса, с отменой; ответ — путь ноды и подписи пинов. Дальше как обычно: `PCGToolset.UpdateNode`, `ConnectNodePins`, сохранить граф |
+
 ## Agent skill
 
 `UIluUnrealToolAgentSkill` — краткая инструкция по тулсетам для агента. ToolsetRegistry находит её сам:

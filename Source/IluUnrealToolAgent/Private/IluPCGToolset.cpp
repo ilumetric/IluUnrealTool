@@ -1,7 +1,10 @@
 #include "IluPCGToolset.h"
 #include "IluUnrealToolCore.h"
 
+#include "Algo/Transform.h"
 #include "ScopedTransaction.h"
+#include "UObject/StructOnScope.h"
+#include "UObject/UObjectHash.h"
 #include "UObject/UnrealType.h"
 
 #define LOCTEXT_NAMESPACE "IluPCGToolset"
@@ -148,6 +151,144 @@ namespace IluPCGHLSL
 	}
 }
 
+namespace IluPCGNodes
+{
+	// Штатный PCGToolset ставит только ноды пакета /Script/PCG (по заголовку). Здесь — любые наследники UPCGSettings;
+	// граф правим его же UFUNCTION (AddNodeOfType, ForceNotificationForEditor) через ProcessEvent, без модуля PCG.
+	static const TCHAR* StockPackageName = TEXT("/Script/PCG");
+
+	static UClass* FindPCGClass(const TCHAR* ClassName)
+	{
+		return FindObject<UClass>(nullptr, *FString::Printf(TEXT("%s.%s"), StockPackageName, ClassName));
+	}
+
+	// Как палитра нод редактора: абстрактные, устаревшие и скрытые классы и настройки с bExposeToLibrary = false не ставим.
+	static bool IsPlaceable(UClass* Class)
+	{
+		if (Class->HasAnyClassFlags(CLASS_Abstract | CLASS_Deprecated | CLASS_NewerVersionExists | CLASS_Hidden))
+		{
+			return false;
+		}
+		const FBoolProperty* ExposeToLibrary = FindFProperty<FBoolProperty>(Class, TEXT("bExposeToLibrary"));
+		return !ExposeToLibrary || ExposeToLibrary->GetPropertyValue_InContainer(Class->GetDefaultObject());
+	}
+
+	static TArray<UClass*> GetNodeClasses(UClass* SettingsClass)
+	{
+		TArray<UClass*> Classes;
+		GetDerivedClasses(SettingsClass, Classes, /*bRecursive=*/true);
+		Classes.RemoveAll([](UClass* Class) { return !IsPlaceable(Class); });
+		Classes.Sort([](const UClass& A, const UClass& B) { return A.GetPathName() < B.GetPathName(); });
+		return Classes;
+	}
+
+	// Путь класса, имя класса (с префиксом U или без) или отображаемое имя; путь важнее остального.
+	static UClass* ResolveNodeClass(UClass* SettingsClass, const FString& NodeType, FString& OutError)
+	{
+		const FString Type = NodeType.TrimStartAndEnd();
+		TArray<UClass*> Matches;
+		for (UClass* Class : GetNodeClasses(SettingsClass))
+		{
+			if (Class->GetPathName().Equals(Type, ESearchCase::IgnoreCase))
+			{
+				return Class;
+			}
+			if (Class->GetName().Equals(Type, ESearchCase::IgnoreCase) || (TEXT("U") + Class->GetName()).Equals(Type, ESearchCase::IgnoreCase)
+				|| Class->GetDisplayNameText().ToString().Equals(Type, ESearchCase::IgnoreCase))
+			{
+				Matches.Add(Class);
+			}
+		}
+
+		if (Matches.Num() == 1)
+		{
+			return Matches[0];
+		}
+
+		TArray<FString> Paths;
+		Algo::Transform(Matches, Paths, [](const UClass* Class) { return Class->GetPathName(); });
+		OutError = Matches.IsEmpty()
+			? FString::Printf(TEXT("Error: no placeable PCG node type '%s'; find its class path with ListNodeTypes."), *Type)
+			: FString::Printf(TEXT("Error: '%s' is ambiguous, pass the class path: %s."), *Type, *FString::Join(Paths, TEXT(", ")));
+		return nullptr;
+	}
+
+	template <typename TProperty, typename TValue>
+	static void SetValue(UObject* Object, FName PropertyName, const TValue& Value)
+	{
+		if (TProperty* Property = FindFProperty<TProperty>(Object->GetClass(), PropertyName))
+		{
+			Property->SetPropertyValue_InContainer(Object, Value);
+		}
+	}
+
+	// Подписи пинов ноды: UPCGNode::InputPins / OutputPins → UPCGPin::Properties.Label.
+	static FString DescribePins(UObject* Node, FName ArrayName)
+	{
+		const FArrayProperty* Property = FindFProperty<FArrayProperty>(Node->GetClass(), ArrayName);
+		const FObjectPropertyBase* Inner = Property ? CastField<FObjectPropertyBase>(Property->Inner) : nullptr;
+		if (!Inner)
+		{
+			return TEXT("?");
+		}
+
+		TArray<FString> Labels;
+		FScriptArrayHelper Array(Property, Property->ContainerPtrToValuePtr<void>(Node));
+		for (int32 Index = 0; Index < Array.Num(); ++Index)
+		{
+			const UObject* Pin = Inner->GetObjectPropertyValue(Array.GetRawPtr(Index));
+			const FStructProperty* PinProperties = Pin ? FindFProperty<FStructProperty>(Pin->GetClass(), TEXT("Properties")) : nullptr;
+			const FNameProperty* Label = PinProperties ? FindFProperty<FNameProperty>(PinProperties->Struct, TEXT("Label")) : nullptr;
+			if (Label)
+			{
+				Labels.Add(Label->GetPropertyValue_InContainer(PinProperties->ContainerPtrToValuePtr<void>(Pin)).ToString());
+			}
+		}
+		return Labels.IsEmpty() ? TEXT("none") : FString::Join(Labels, TEXT(", "));
+	}
+
+	// UPCGGraph::AddNodeOfType(TSubclassOf<UPCGSettings>, UPCGSettings*&) — BlueprintCallable, зовём через ProcessEvent.
+	static UObject* CallAddNodeOfType(UObject* Graph, UClass* NodeClass)
+	{
+		UFunction* Function = Graph->FindFunction(TEXT("AddNodeOfType"));
+		const FClassProperty* ClassParam = Function ? CastField<FClassProperty>(Function->FindPropertyByName(TEXT("InSettingsClass"))) : nullptr;
+		const FObjectPropertyBase* ReturnParam = Function ? CastField<FObjectPropertyBase>(Function->GetReturnProperty()) : nullptr;
+		if (!ClassParam || !ReturnParam)
+		{
+			return nullptr;
+		}
+
+		FStructOnScope Params(Function);
+		ClassParam->SetObjectPropertyValue_InContainer(Params.GetStructMemory(), NodeClass);
+		Graph->ProcessEvent(Function, Params.GetStructMemory());
+		return ReturnParam->GetObjectPropertyValue_InContainer(Params.GetStructMemory());
+	}
+
+	// UPCGGraph::ForceNotificationForEditor(EPCGChangeType::Structural) — открытый редактор графа перестраивается.
+	static void NotifyEditor(UObject* Graph)
+	{
+		UFunction* Function = Graph->FindFunction(TEXT("ForceNotificationForEditor"));
+		const FEnumProperty* ChangeParam = Function ? CastField<FEnumProperty>(Function->FindPropertyByName(TEXT("ChangeType"))) : nullptr;
+		if (!ChangeParam)
+		{
+			return;
+		}
+
+		FStructOnScope Params(Function);
+		const UEnum* ChangeType = ChangeParam->GetEnum();
+		for (int32 Index = 0; Index < ChangeType->NumEnums(); ++Index)
+		{
+			if (ChangeType->GetNameStringByIndex(Index) == TEXT("Structural"))
+			{
+				ChangeParam->GetUnderlyingProperty()->SetIntPropertyValue(ChangeParam->ContainerPtrToValuePtr<void>(Params.GetStructMemory()),
+					ChangeType->GetValueByIndex(Index));
+				break;
+			}
+		}
+		Graph->ProcessEvent(Function, Params.GetStructMemory());
+	}
+}
+
 FString UIluPCGToolset::GetHLSLSource(UObject* Target, bool bIncludeDeclarations)
 {
 	using namespace IluPCGHLSL;
@@ -221,6 +362,102 @@ FString UIluPCGToolset::SetHLSLFunctions(UObject* Target, const FString& Functio
 		return FString::Printf(TEXT("Error: the node uses Kernel Source Override %s; edit that asset (SetHLSLSource on it)."), *Override->GetPathName());
 	}
 	return SetString(Object, TEXT("ShaderFunctions"), Functions, LOCTEXT("SetShaderFunctions", "Set Functions Text"));
+}
+
+FString UIluPCGToolset::ListNodeTypes(const FString& Filter)
+{
+	using namespace IluPCGNodes;
+
+	UClass* SettingsClass = FindPCGClass(TEXT("PCGSettings"));
+	if (!SettingsClass)
+	{
+		return TEXT("Error: the PCG plugin is not loaded.");
+	}
+
+	const FString Needle = Filter.TrimStartAndEnd();
+	TArray<FString> Lines;
+	for (UClass* Class : GetNodeClasses(SettingsClass))
+	{
+		const FString DisplayName = Class->GetDisplayNameText().ToString();
+		const FString Path = Class->GetPathName();
+		if (!Needle.IsEmpty() && !DisplayName.Contains(Needle) && !Path.Contains(Needle))
+		{
+			continue;
+		}
+		const bool bStock = Class->GetPackage()->GetName() == StockPackageName;
+		Lines.Add(FString::Printf(TEXT("%s | %s%s"), *DisplayName, *Path, bStock ? TEXT(" [stock]") : TEXT("")));
+	}
+
+	return FString::Printf(TEXT("OK: %d node types (display name | class path; [stock] = also placeable with PCGToolset.AddNode by node title)\n%s"),
+		Lines.Num(), *FString::Join(Lines, TEXT("\n")));
+}
+
+FString UIluPCGToolset::AddNodeByClass(UObject* Graph, const FString& NodeType, const FString& NodeName, const FString& NodeTitle,
+	int32 XPosition, int32 YPosition)
+{
+	using namespace IluPCGNodes;
+
+	UClass* SettingsClass = FindPCGClass(TEXT("PCGSettings"));
+	if (!SettingsClass)
+	{
+		return TEXT("Error: the PCG plugin is not loaded.");
+	}
+	if (!Graph || !IluPCGHLSL::IsA(Graph, TEXT("PCGGraph")))
+	{
+		return FString::Printf(TEXT("Error: %s is not a PCG graph."), *GetPathNameSafe(Graph));
+	}
+
+	FString Error;
+	UClass* NodeClass = ResolveNodeClass(SettingsClass, NodeType, Error);
+	if (!NodeClass)
+	{
+		return Error;
+	}
+
+	// Имя проверяем до добавления: отменённая транзакция ноду из графа не уберёт.
+	const FString Name = NodeName.TrimStartAndEnd();
+	if (!Name.IsEmpty())
+	{
+		FText Reason;
+		if (!FName::IsValidXName(Name, INVALID_OBJECTNAME_CHARACTERS, &Reason))
+		{
+			return FString::Printf(TEXT("Error: invalid node name '%s': %s"), *Name, *Reason.ToString());
+		}
+		if (StaticFindObjectFast(nullptr, Graph, FName(*Name)))
+		{
+			return FString::Printf(TEXT("Error: the graph already has an object named '%s'."), *Name);
+		}
+	}
+
+	UObject* Node = nullptr;
+	{
+		FScopedTransaction Transaction(LOCTEXT("AddNodeByClass", "Add PCG Node"));
+		Graph->Modify();
+		Node = CallAddNodeOfType(Graph, NodeClass);
+		if (!Node)
+		{
+			Transaction.Cancel();
+			return FString::Printf(TEXT("Error: UPCGGraph::AddNodeOfType failed for %s (engine version changed?)."), *NodeClass->GetPathName());
+		}
+
+		if (!Name.IsEmpty())
+		{
+			Node->Rename(*Name, nullptr, REN_DontCreateRedirectors);
+		}
+		if (!NodeTitle.IsEmpty())
+		{
+			SetValue<FNameProperty>(Node, TEXT("NodeTitle"), FName(*NodeTitle));
+		}
+		SetValue<FIntProperty>(Node, TEXT("PositionX"), XPosition);
+		SetValue<FIntProperty>(Node, TEXT("PositionY"), YPosition);
+	}
+
+	(void)Graph->MarkPackageDirty();
+	NotifyEditor(Graph);
+
+	UE_LOG(LogIluUnrealTool, Log, TEXT("%s: добавлена нода %s (%s)."), *Graph->GetPathName(), *Node->GetName(), *NodeClass->GetName());
+	return FString::Printf(TEXT("OK: added %s node %s. Input pins: %s. Output pins: %s. Set parameters with PCGToolset.UpdateNode, wire with PCGToolset.ConnectNodePins, then save the graph."),
+		*NodeClass->GetName(), *Node->GetPathName(), *DescribePins(Node, TEXT("InputPins")), *DescribePins(Node, TEXT("OutputPins")));
 }
 
 #undef LOCTEXT_NAMESPACE

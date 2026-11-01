@@ -7,9 +7,11 @@
 
 /**
  * PCG helpers for MCP that the stock PCGToolset lacks: reading and writing the HLSL code of Custom HLSL nodes and PCG
- * Compute Source assets. Works through reflection, so the plugin does not depend on the PCG plugin.
+ * Compute Source assets, listing and placing nodes from any module (the stock AddNode only knows /Script/PCG nodes).
+ * Works through reflection, so the plugin does not depend on the PCG plugin.
  * Помощники PCG через MCP — то, чего нет в штатном PCGToolset: чтение и запись HLSL-кода нод Custom HLSL и ассетов
- * PCG Compute Source. Работает через рефлексию, поэтому плагин не зависит от плагина PCG.
+ * PCG Compute Source, список и установка нод из любого модуля (штатный AddNode знает только ноды /Script/PCG).
+ * Работает через рефлексию, поэтому плагин не зависит от плагина PCG.
  */
 UCLASS()
 class UIluPCGToolset : public UToolsetDefinition
@@ -57,4 +59,35 @@ public:
 	 */
 	UFUNCTION(meta = (AICallable), Category = "IluPCGToolset")
 	static FString SetHLSLFunctions(UObject* Target, const FString& Functions);
+
+	/**
+	 * Read-only: lists the PCG node types of all loaded modules, including plugin nodes that the stock
+	 * PCGToolset.ListNativeNodes / AddNode do not see (e.g. Mesh Partition, Geometry Script interop). One line per type:
+	 * class display name, class path, [stock] for /Script/PCG nodes.
+	 * Только чтение: типы PCG-нод всех загруженных модулей, включая ноды плагинов, которых не видят штатные
+	 * PCGToolset.ListNativeNodes / AddNode (например Mesh Partition, Geometry Script). Строка на тип: отображаемое имя
+	 * класса, путь класса, [stock] у нод /Script/PCG.
+	 * @param Filter Case-insensitive substring of the display name or class path; empty lists everything.
+	 * @return "OK: N node types" followed by the list, or an error description.
+	 */
+	UFUNCTION(meta = (AICallable), Category = "IluPCGToolset")
+	static FString ListNodeTypes(const FString& Filter);
+
+	/**
+	 * Adds a node of any PCG settings class to a graph, undoable. Then set its parameters with PCGToolset.UpdateNode and
+	 * wire it with PCGToolset.ConnectNodePins as usual, and save the graph (AssetTools.save_assets).
+	 * Добавляет в граф ноду любого класса настроек PCG, с отменой. Дальше как обычно: параметры — PCGToolset.UpdateNode,
+	 * связи — PCGToolset.ConnectNodePins, потом сохранить граф.
+	 * @param Graph The PCG graph asset.
+	 * @param NodeType Settings class path from ListNodeTypes (e.g. /Script/PCGMeshPartitionInterop.PCGQuerySettings),
+	 *        a class name, or a class display name.
+	 * @param NodeName Unique node name in the graph (used in the node path); empty keeps the generated name.
+	 * @param NodeTitle Display title; empty keeps the default title.
+	 * @param XPosition X position in the graph editor (a node is about 200 wide).
+	 * @param YPosition Y position in the graph editor (a node is about 100 high).
+	 * @return "OK: ..." with the node path and its pin labels, or an error description.
+	 */
+	UFUNCTION(meta = (AICallable), Category = "IluPCGToolset")
+	static FString AddNodeByClass(UObject* Graph, const FString& NodeType, const FString& NodeName, const FString& NodeTitle,
+		int32 XPosition, int32 YPosition);
 };

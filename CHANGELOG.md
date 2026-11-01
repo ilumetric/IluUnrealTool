@@ -9,6 +9,8 @@
 - MCP-тулсет `IluUnrealToolAgent.IluPCGToolset`: `GetHLSLSource`, `SetHLSLSource`, `SetHLSLFunctions` — чтение
   и запись HLSL-кода нод Custom HLSL (тело ядра, свои функции, сгенерированные объявления пинов) и ассетов PCG Compute Source.
   Через рефлексию, без зависимости от плагина PCG; запись — как в HLSL Source Editor (с отменой и перекомпиляцией графа).
+  `ListNodeTypes` и `AddNodeByClass` — список и установка PCG-нод из любых модулей, включая плагины (Mesh Partition и др.),
+  которых не видит штатный `PCGToolset.AddNode`.
 - Запекание мешей акторов (`FIluMeshBake` в Core): видимые компоненты Dynamic Mesh (блокауты на Geometry Script)
   и Static Mesh сливаются в один меш со слотом на уникальный материал. MCP: `IluMeshToolset.BakeActorsToStaticMesh`
   (новый ассет статик-меша) и `IluMeshToolset.ExportActorsToFile` (сразу в .fbx/.obj). Меню «⋮» → Mesh Ops:
