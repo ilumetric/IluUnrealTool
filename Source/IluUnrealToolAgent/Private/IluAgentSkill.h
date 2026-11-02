@@ -21,7 +21,8 @@ public:
 	{
 		Description = TEXT("IluUnrealTool: batch static mesh fixes (material slots, vertex color, AO bake, UVs, LODs, collision), "
 			"material graph helpers (named reroutes, comment boxes, color curve keys), Blueprint helpers (Blueprint enums, "
-			"variable type change), PCG Custom HLSL code read/write and placing PCG plugin nodes that the stock toolsets lack.");
+			"variable type change), PCG Custom HLSL code read/write and placing PCG plugin nodes that the stock toolsets lack, driving an open asset editor "
+			"(select graph nodes to switch the PCG / Procedural Vegetation preview, capture the preview viewport, run editor commands, close it).");
 		Instructions = TEXT(
 			"Toolsets (call through the MCP call_tool with toolset_name and tool_name):\n"
 			"- IluUnrealToolAgent.IluMeshToolset — static mesh asset operations. Every tool edits the ASSET (all its instances on all "
@@ -62,6 +63,18 @@ public:
 			"PCGToolset.AddNode only places /Script/PCG nodes; plugin nodes (Mesh Partition Query, Geometry Script, ...) are added "
 			"here by class path from ListNodeTypes. The result lists the node path and pin labels; then PCGToolset.UpdateNode, "
 			"ConnectNodePins and save the graph as usual.\n"
+			"- IluUnrealToolAgent.IluAssetEditorToolset — drive an OPEN asset editor (EditorAppToolset.OpenEditorForAsset first) without "
+			"clicking its UI; any editor built on the standard graph editor and viewport (PCG, Procedural Vegetation, Blueprint, Material).\n"
+			"  * SelectGraphNodes(Asset, Nodes, bFrame) — replaces the selection like a click; in PCG / Procedural Vegetation editors the "
+			"preview shows the selected node (e.g. an Export node to see one plant variation). Names as in PCGToolset.GetGraphStructure "
+			"(Export_0) or display titles; unknown names return the node list. The preview regenerates asynchronously: wait a few seconds.\n"
+			"  * CapturePreview(Asset, FilePath, Yaw, Pitch, FOV) — PNG of the preview viewport from Yaw/Pitch framed to the content (floor "
+			"and sky skipped); the viewport renders it (same light and exposure as the user sees), its camera is restored after, the image "
+			"has the viewport size; FOV 0 keeps the viewport's; empty FilePath saves to "
+			"<Project>/Saved/IluUnrealTool/Captures/<Asset>.png. The result also has the viewport overlay text (PVE stats: Triangles, "
+			"Foliage Instances). Read the PNG to look at it. Typical: Yaw 0..360, Pitch -8, FOV 30.\n"
+			"  * ExecuteEditorCommand(Asset, CommandContext, CommandName) — e.g. PCGEditor / ForceGraphRegeneration (Force Regen).\n"
+			"  * CloseAssetEditor(Asset) — no save prompt; save first (AssetTools.save_assets).\n"
 			"Object references are passed as {\"refPath\": \"/Game/Path/Asset.Asset\"}. For multi-step jobs prefer one "
 			"ProgrammaticToolset.execute_tool_script call that loops over assets instead of many single calls.");
 	}

@@ -77,6 +77,20 @@ HLSL-код нод **Custom HLSL** и ассетов **PCG Compute Source** — 
 | `ListNodeTypes` | `Filter` | только чтение: типы нод всех загруженных модулей — отображаемое имя класса, путь класса, `[stock]` у нод `/Script/PCG`; `Filter` — подстрока имени или пути без учёта регистра |
 | `AddNodeByClass` | `Graph`, `NodeType`, `NodeName`, `NodeTitle`, `XPosition`, `YPosition` | добавить ноду по пути класса (например `/Script/PCGMeshPartitionInterop.PCGQuerySettings`), имени или отображаемому имени класса, с отменой; ответ — путь ноды и подписи пинов. Дальше как обычно: `PCGToolset.UpdateNode`, `ConnectNodePins`, сохранить граф |
 
+## IluUnrealToolAgent.IluAssetEditorToolset
+
+Управление **открытым** редактором ассета без кликов по интерфейсу: штатные тулсеты открывают редактор
+(`EditorAppToolset.OpenEditorForAsset`), но не умеют выделить ноду в его графе, снять его окно превью или нажать кнопку
+тулбара. Работает через Slate с любым редактором на штатных виджетах графа и вьюпорта (PCG, Procedural Vegetation,
+Blueprint, Material), без зависимости от их модулей. Редактор ассета должен быть открыт.
+
+| Инструмент | Аргументы | Что делает |
+|---|---|---|
+| `SelectGraphNodes` | `Asset`, `Nodes`, `bFrame` | выделить ноды в графе (вместо текущего выделения), как кликом: в PCG / PVE превью переключается на выделенную ноду и пересчитывается асинхронно — перед снимком подождать несколько секунд. Имя — как в `PCGToolset.GetGraphStructure` (`Export_0`) или заголовок, без учёта регистра и `_`/пробела; не нашлось — в ответе список нод |
+| `CapturePreview` | `Asset`, `FilePath`, `Yaw`, `Pitch`, `FOV` | PNG вьюпорта превью с ракурса Yaw/Pitch, кадр по видимому содержимому (пол и небо редактора не считаются). Рисует сам вьюпорт — свет и экспозиция как у пользователя; камера ставится на время снимка и возвращается, размер картинки — размер вьюпорта; `FOV` 0 — как во вьюпорте. Пустой путь — `<Проект>/Saved/IluUnrealTool/Captures/<Ассет>.png`. В ответе — габариты и текст оверлея вьюпорта (статистика PVE: Triangles, Foliage Instances) |
+| `ExecuteEditorCommand` | `Asset`, `CommandContext`, `CommandName` | команда редактора, как её кнопка или клавиша: например `PCGEditor` / `ForceGraphRegeneration` (Force Regen) |
+| `CloseAssetEditor` | `Asset` | закрыть редакторы ассета без вопроса о сохранении (правки остаются в памяти, ассет «грязный») — сначала сохранить |
+
 ## Agent skill
 
 `UIluUnrealToolAgentSkill` — краткая инструкция по тулсетам для агента. ToolsetRegistry находит её сам:

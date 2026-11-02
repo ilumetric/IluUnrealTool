@@ -30,6 +30,8 @@ Editor toolkit for Unreal Engine with two sections: tools for the developer and 
 - `IluUnrealToolAgent.IluBlueprintToolset` — Blueprint-энумы (создать, задать и прочитать элементы) и смена типа переменной Blueprint.
 - `IluUnrealToolAgent.IluPCGToolset` — чтение и запись HLSL-кода нод Custom HLSL и ассетов PCG Compute Source,
   список и установка PCG-нод из плагинов, которых не видит штатный `PCGToolset`.
+- `IluUnrealToolAgent.IluAssetEditorToolset` — открытый редактор ассета без кликов: выделить ноды графа (в PCG / PVE —
+  переключить превью), снимок окна превью своей камерой, команды тулбара (Force Regen), закрыть редактор.
 - Agent skill `IluUnrealToolAgentSkill` — инструкция для агента, находится через `AgentSkillToolset.ListSkills`.
 - `Agent/Scripts` — CLI-обёртки для вызова MCP из терминала (`mcp.sh`, `run.sh`), `Agent/Examples` — пример скрипта.
 
