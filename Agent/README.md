@@ -93,6 +93,14 @@ Blueprint, Material), без зависимости от их модулей. Р
 | `ExecuteEditorCommand` | `Asset`, `CommandContext`, `CommandName` | команда редактора, как её кнопка или клавиша: например `PCGEditor` / `ForceGraphRegeneration` (Force Regen) |
 | `CloseAssetEditor` | `Asset` | закрыть редакторы ассета без вопроса о сохранении (правки остаются в памяти, ассет «грязный») — сначала сохранить |
 
+## IluUnrealToolAgent.IluAssetToolset
+
+Импорт файлов в любом формате, который умеет редактор: штатный `StaticMeshTools.import_file` берёт только FBX и OBJ.
+
+| Инструмент | Аргументы | Что делает |
+|---|---|---|
+| `ImportFile` | `SourceFile`, `DestinationPath`, `DestinationName`, `bReplaceExisting` | импорт файла с диска с настройками по умолчанию, без диалога — как перетаскивание в Content Browser (`UAssetImportTask`): USD через Interchange (статические и скелетные меши, Nanite Assembly, материалы), FBX, glTF, текстуры; из одного файла может получиться несколько ассетов, в ответе — класс и путь каждого; потом сохранить |
+
 ## Agent skill
 
 `UIluUnrealToolAgentSkill` — краткая инструкция по тулсетам для агента. ToolsetRegistry находит её сам:

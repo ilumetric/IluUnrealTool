@@ -1,5 +1,6 @@
 #include "IluAgentToolsetSubsystem.h"
 #include "IluAssetEditorToolset.h"
+#include "IluAssetToolset.h"
 #include "IluBlueprintToolset.h"
 #include "IluMaterialToolset.h"
 #include "IluMeshToolset.h"
@@ -18,6 +19,7 @@ TArray<UClass*> UIluAgentToolsetSubsystem::GetToolsetClasses()
 		UIluBlueprintToolset::StaticClass(),
 		UIluPCGToolset::StaticClass(),
 		UIluAssetEditorToolset::StaticClass(),
+		UIluAssetToolset::StaticClass(),
 	};
 }
 

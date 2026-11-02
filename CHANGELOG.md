@@ -6,6 +6,9 @@
 ## [Unreleased]
 
 ### Добавлено
+- MCP-тулсет `IluUnrealToolAgent.IluAssetToolset`: `ImportFile` — импорт файла любого формата, который умеет редактор
+  (USD через Interchange, FBX, glTF, текстуры), с настройками по умолчанию и без диалога (`UAssetImportTask`);
+  штатный `StaticMeshTools.import_file` берёт только FBX и OBJ.
 - MCP-тулсет `IluUnrealToolAgent.IluAssetEditorToolset` — управление открытым редактором ассета через Slate, без
   зависимости от модулей редакторов: `SelectGraphNodes` (выделить ноды графа; в PCG / Procedural Vegetation превью
   переключается на них), `CapturePreview` (PNG вьюпорта превью с ракурса Yaw/Pitch, кадр по содержимому, свет и экспозиция

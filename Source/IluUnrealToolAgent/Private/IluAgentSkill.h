@@ -77,6 +77,9 @@ public:
 			"Foliage Instances). Read the PNG to look at it. Typical: Yaw 0..360, Pitch -8, FOV 30.\n"
 			"  * ExecuteEditorCommand(Asset, CommandContext, CommandName) — e.g. PCGEditor / ForceGraphRegeneration (Force Regen).\n"
 			"  * CloseAssetEditor(Asset) — no save prompt; save first (AssetTools.save_assets).\n"
+			"- IluUnrealToolAgent.IluAssetToolset — ImportFile(SourceFile, DestinationPath, DestinationName, bReplaceExisting): import any "
+			"format the editor supports (USD stages through Interchange incl. skeletal Nanite assemblies, FBX, glTF, textures) with default "
+			"settings and no dialog; the result lists every created asset; save them afterwards (AssetTools.save_assets).\n"
 			"Object references are passed as {\"refPath\": \"/Game/Path/Asset.Asset\"}. For multi-step jobs prefer one "
 			"ProgrammaticToolset.execute_tool_script call that loops over assets instead of many single calls.");
 	}
