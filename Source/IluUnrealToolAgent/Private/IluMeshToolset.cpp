@@ -29,6 +29,16 @@ FString UIluMeshToolset::InspectVertexColors(UStaticMesh* Mesh)
 	return FIluMeshOperations::InspectVertexColors(Mesh);
 }
 
+FString UIluMeshToolset::InspectUVs(UStaticMesh* Mesh)
+{
+	return FIluMeshOperations::InspectUVs(Mesh);
+}
+
+FString UIluMeshToolset::DisableLightmapUVs(UStaticMesh* Mesh)
+{
+	return FIluMeshOperations::DisableLightmapUVs(Mesh);
+}
+
 FString UIluMeshToolset::SetCollisionProjectDefault(UStaticMesh* Mesh)
 {
 	return FIluMeshOperations::SetCollisionProjectDefault(Mesh);

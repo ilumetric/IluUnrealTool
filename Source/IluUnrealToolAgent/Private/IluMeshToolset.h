@@ -76,6 +76,30 @@ public:
 	static FString InspectVertexColors(UStaticMesh* Mesh);
 
 	/**
+	 * Read-only diagnostics of UV channels: lightmap coordinate index and Generate Lightmap UVs settings, U/V min/max of every
+	 * channel in the source LOD0 and in the built LOD0 (what materials read). Use it to check data packed into UV1+ (e.g.
+	 * vertex color baked to UVs) survived the import and was not replaced by a generated lightmap channel.
+	 * Диагностика UV-каналов (только чтение): индекс лайтмап-UV и настройки Generate Lightmap UVs, мин/макс U/V каждого канала
+	 * в исходном LOD0 и в собранном LOD0 (его читает материал). Проверить, что данные в UV1+ (например вертекс-колор,
+	 * запечённый в UV) пережили импорт и не заменены сгенерированным лайтмап-каналом.
+	 * @param Mesh The static mesh asset.
+	 * @return A multi-line report.
+	 */
+	UFUNCTION(meta = (AICallable), Category = "IluMeshToolset")
+	static FString InspectUVs(UStaticMesh* Mesh);
+
+	/**
+	 * Turns off "Generate Lightmap UVs" on all LODs and points the lightmap coordinate index at UV0, keeping every UV channel —
+	 * for meshes that carry data in UV1+ (Nanite foliage, vertex color baked to UVs). Rebuilds the mesh. Save afterwards.
+	 * Выключает «Generate Lightmap UVs» на всех LOD и ставит индекс лайтмап-UV на 0, все UV-каналы сохраняются — для мешей с
+	 * данными в UV1+ (Nanite-растительность, вертекс-колор в UV). Пересобирает меш. После — сохранить.
+	 * @param Mesh The static mesh asset.
+	 * @return "OK: ..." or an error description.
+	 */
+	UFUNCTION(meta = (AICallable), Category = "IluMeshToolset")
+	static FString DisableLightmapUVs(UStaticMesh* Mesh);
+
+	/**
 	 * Sets the collision complexity of the mesh to Project Default (instead of e.g. "Use Complex Collision As Simple") and
 	 * rebuilds its physics data. Reports how many simple shapes the mesh has (0 = nothing for simple queries). Save afterwards.
 	 * Ставит сложность коллизии меша в Project Default (вместо, например, «Use Complex Collision As Simple») и пересобирает

@@ -33,6 +33,8 @@ public:
 			"  * FillVertexColor(Mesh, Color) — linear RGBA 0..1, e.g. {r:0,g:0,b:0,a:0} to clear.\n"
 			"  * BakeAOToVertexAlpha(Mesh, RayCount, MaxDistance) — RayCount 64 and MaxDistance 50 cm are good defaults; RGB is kept.\n"
 			"  * KeepOnlyUV0(Mesh) — removes UV1+ and lightmap UV generation.\n"
+			"  * InspectUVs(Mesh) — read-only U/V ranges per channel (source and built LOD0) and lightmap settings; check data packed in UV1+.\n"
+			"  * DisableLightmapUVs(Mesh) — lightmap generation off, lightmap on UV0, all UV channels kept (for data in UV1+, e.g. vertex color baked to UVs).\n"
 			"  * RemoveLods(Mesh) — keeps LOD0 only (for Nanite meshes).\n"
 			"  * SetCollisionProjectDefault(Mesh) — warns when the mesh has no simple collision.\n"
 			"  * BakeActorsToStaticMesh(Actors, AssetPath, bPivotAtBottomCenter) — merges the visible Dynamic Mesh (e.g. Geometry Script "

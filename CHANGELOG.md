@@ -11,6 +11,9 @@
   переключается на них), `CapturePreview` (PNG вьюпорта превью с ракурса Yaw/Pitch, кадр по содержимому, свет и экспозиция
   как у пользователя, плюс текст оверлея вьюпорта со статистикой), `ExecuteEditorCommand` (команда редактора, например Force Regen),
   `CloseAssetEditor`.
+- `IluMeshToolset.InspectUVs` (только чтение: диапазоны U/V каждого канала в исходнике и в собранном LOD0, настройки
+  лайтмапы) и `IluMeshToolset.DisableLightmapUVs` (выключить генерацию лайтмап-UV, сохранив все каналы) — для мешей
+  с данными в UV1+ (вертекс-колор, запечённый в UV).
 - MCP-тулсет `IluUnrealToolAgent.IluPCGToolset`: `GetHLSLSource`, `SetHLSLSource`, `SetHLSLFunctions` — чтение
   и запись HLSL-кода нод Custom HLSL (тело ядра, свои функции, сгенерированные объявления пинов) и ассетов PCG Compute Source.
   Через рефлексию, без зависимости от плагина PCG; запись — как в HLSL Source Editor (с отменой и перекомпиляцией графа).

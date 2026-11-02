@@ -38,6 +38,14 @@ struct ILUUNREALTOOLCORE_API FIluMeshOperations
 	 *  Отчёт по вертекс-колору (только чтение): мин/макс исходника и собранного LOD0, компоненты уровня с цветом экземпляра. */
 	static FString InspectVertexColors(UStaticMesh* Mesh);
 
+	/** Read-only UV report: lightmap settings, U/V ranges of every channel in the source LOD0 and in the built LOD0.
+	 *  Отчёт по UV (только чтение): настройки лайтмапы, диапазоны U/V каждого канала в исходном и в собранном LOD0. */
+	static FString InspectUVs(UStaticMesh* Mesh);
+
+	/** Turn off Generate Lightmap UVs and point the lightmap at UV0, keeping every UV channel (data packed into UV1+).
+	 *  Выключить Generate Lightmap UVs и перевести лайтмап на UV0, все UV-каналы сохраняются (данные в UV1+). */
+	static FString DisableLightmapUVs(UStaticMesh* Mesh);
+
 	/** Collision complexity -> Project Default, physics data rebuilt; reports the simple shape count.
 	 *  Сложность коллизии -> Project Default, физданные пересобраны; в отчёте число простых форм. */
 	static FString SetCollisionProjectDefault(UStaticMesh* Mesh);

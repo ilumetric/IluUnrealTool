@@ -19,6 +19,8 @@ MCP-сервер редактора (плагин `ModelContextProtocol`, по �
 | `FillVertexColor` | `Mesh`, `Color` | вертекс-колор всех вершин = одно значение (линейный RGBA 0..1) |
 | `BakeAOToVertexAlpha` | `Mesh`, `RayCount`, `MaxDistance` | AO от самого меша в альфу вертекс-колора (64 луча, 50 см — хорошие значения) |
 | `KeepOnlyUV0` | `Mesh` | удалить UV1+, выключить генерацию лайтмап-UV, лайтмап на UV0 |
+| `InspectUVs` | `Mesh` | только чтение: индекс и генерация лайтмап-UV, диапазоны U/V каждого канала в исходнике и в собранном LOD0 — проверить, что данные в UV1+ (вертекс-колор, запечённый в UV) пережили импорт |
+| `DisableLightmapUVs` | `Mesh` | выключить генерацию лайтмап-UV, лайтмап на UV0, **все UV-каналы сохраняются** (меши с данными в UV1+) |
 | `RemoveLods` | `Mesh` | оставить только LOD0, включая импортные LOD |
 | `SetCollisionProjectDefault` | `Mesh` | Collision Complexity = Project Default, в отчёте число простых форм |
 

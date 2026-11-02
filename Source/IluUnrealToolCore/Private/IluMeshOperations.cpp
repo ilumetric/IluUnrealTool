@@ -439,6 +439,115 @@ FString FIluMeshOperations::InspectVertexColors(UStaticMesh* Mesh)
 	return Report;
 }
 
+FString FIluMeshOperations::InspectUVs(UStaticMesh* Mesh)
+{
+	if (!Mesh)
+	{
+		return TEXT("Error: Mesh is null.");
+	}
+
+	FString Report = FString::Printf(TEXT("%s: lightmap coordinate index %d;"), *Mesh->GetName(), Mesh->GetLightMapCoordinateIndex());
+	if (Mesh->GetNumSourceModels() > 0)
+	{
+		const FMeshBuildSettings& BuildSettings = Mesh->GetSourceModel(0).BuildSettings;
+		Report += FString::Printf(TEXT(" generate lightmap UVs %s (src %d -> dst %d);"),
+			BuildSettings.bGenerateLightmapUVs ? TEXT("ON") : TEXT("off"), BuildSettings.SrcLightmapIndex, BuildSettings.DstLightmapIndex);
+	}
+
+	// Исходная геометрия LOD0 — то, что пришло из DCC (лайтмап-генерация её не трогает, только сборку).
+	if (FMeshDescription* Description = Mesh->IsMeshDescriptionValid(0) ? Mesh->GetMeshDescription(0) : nullptr)
+	{
+		FStaticMeshAttributes Attributes(*Description);
+		TVertexInstanceAttributesConstRef<FVector2f> UVs = Attributes.GetVertexInstanceUVs();
+		const int32 Channels = UVs.IsValid() ? UVs.GetNumChannels() : 0;
+		Report += FString::Printf(TEXT("\nsource: %d channel(s)"), Channels);
+		for (int32 Channel = 0; Channel < Channels; ++Channel)
+		{
+			FVector2f Min(TNumericLimits<float>::Max()), Max(-TNumericLimits<float>::Max());
+			for (const FVertexInstanceID InstanceID : Description->VertexInstances().GetElementIDs())
+			{
+				const FVector2f UV = UVs.Get(InstanceID, Channel);
+				Min = FVector2f(FMath::Min(Min.X, UV.X), FMath::Min(Min.Y, UV.Y));
+				Max = FVector2f(FMath::Max(Max.X, UV.X), FMath::Max(Max.Y, UV.Y));
+			}
+			Report += FString::Printf(TEXT("\n  UV%d: U %.3f..%.3f, V %.3f..%.3f"), Channel, Min.X, Max.X, Min.Y, Max.Y);
+		}
+	}
+
+	// Собранный LOD0 — то, что читает материал (сюда попадает и сгенерированный лайтмап-канал).
+	const FStaticMeshRenderData* RenderData = Mesh->GetRenderData();
+	if (RenderData && RenderData->LODResources.Num() > 0)
+	{
+		const FStaticMeshVertexBuffer& Buffer = RenderData->LODResources[0].VertexBuffers.StaticMeshVertexBuffer;
+		const uint32 Num = Buffer.GetNumVertices();
+		const uint32 Channels = Buffer.GetNumTexCoords();
+		Report += FString::Printf(TEXT("\nbuilt LOD0: %u verts, %u channel(s)"), Num, Channels);
+		if (Num > 0 && Buffer.GetTexCoordData())
+		{
+			for (uint32 Channel = 0; Channel < Channels; ++Channel)
+			{
+				FVector2f Min(TNumericLimits<float>::Max()), Max(-TNumericLimits<float>::Max());
+				for (uint32 Index = 0; Index < Num; ++Index)
+				{
+					const FVector2f UV = Buffer.GetVertexUV(Index, Channel);
+					Min = FVector2f(FMath::Min(Min.X, UV.X), FMath::Min(Min.Y, UV.Y));
+					Max = FVector2f(FMath::Max(Max.X, UV.X), FMath::Max(Max.Y, UV.Y));
+				}
+				Report += FString::Printf(TEXT("\n  UV%u: U %.3f..%.3f, V %.3f..%.3f%s"), Channel, Min.X, Max.X, Min.Y, Max.Y,
+					static_cast<int32>(Channel) == Mesh->GetLightMapCoordinateIndex() ? TEXT(" (lightmap)") : TEXT(""));
+			}
+		}
+		else if (Num > 0)
+		{
+			Report += TEXT(" (CPU data released)");
+		}
+	}
+	return Report;
+}
+
+FString FIluMeshOperations::DisableLightmapUVs(UStaticMesh* Mesh)
+{
+	if (!Mesh)
+	{
+		return TEXT("Error: Mesh is null.");
+	}
+
+	bool bChanged = false;
+	for (int32 LodIndex = 0; LodIndex < Mesh->GetNumSourceModels(); ++LodIndex)
+	{
+		FMeshBuildSettings& BuildSettings = Mesh->GetSourceModel(LodIndex).BuildSettings;
+		if (BuildSettings.bGenerateLightmapUVs || BuildSettings.SrcLightmapIndex != 0 || BuildSettings.DstLightmapIndex != 0)
+		{
+			if (!bChanged)
+			{
+				Mesh->Modify();
+				bChanged = true;
+			}
+			BuildSettings.bGenerateLightmapUVs = false;
+			BuildSettings.SrcLightmapIndex = 0;
+			BuildSettings.DstLightmapIndex = 0;
+		}
+	}
+	if (Mesh->GetLightMapCoordinateIndex() != 0)
+	{
+		if (!bChanged)
+		{
+			Mesh->Modify();
+			bChanged = true;
+		}
+		Mesh->SetLightMapCoordinateIndex(0);
+	}
+
+	if (!bChanged)
+	{
+		return TEXT("OK: lightmap UV generation already off, lightmap on UV0.");
+	}
+	IluMeshOps::Rebuild(Mesh);
+
+	UE_LOG(LogIluUnrealTool, Log, TEXT("%s: генерация лайтмап-UV выключена, UV-каналы сохранены."), *Mesh->GetName());
+	return TEXT("OK: lightmap UV generation off, lightmap on UV0, UV channels kept.");
+}
+
 FString FIluMeshOperations::SetCollisionProjectDefault(UStaticMesh* Mesh)
 {
 	if (!Mesh)
